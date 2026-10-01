@@ -6,7 +6,7 @@ Like oil.nvim, it is a [vim-vinegar](https://github.com/tpope/vim-vinegar) like 
 
 The rest of the documentation below is upstream oil.nvim's and applies unchanged, except that the user command is `:OhMyOil` (`:OMO` for short) instead of `:Oil`; see `:help oil-commands`. The Lua module is still called `oil`, so replacing oil.nvim with this fork is a one-line change in your plugin manager.
 
-https://user-images.githubusercontent.com/506791/209727111-6b4a11f4-634a-4efa-9461-80e9717cea94.mp4
+![a directory listing with the vcs column showing the status of each entry](assets/demo.png)
 
 <!-- TOC -->
 
