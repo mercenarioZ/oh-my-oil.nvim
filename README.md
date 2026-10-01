@@ -15,7 +15,6 @@ Like oil.nvim, it is a [vim-vinegar](https://github.com/tpope/vim-vinegar) like 
 - [Adapters](#adapters)
 - [Options](#options)
 - [Documentation](#documentation)
-- [Third-party extensions](#third-party-extensions)
 - [License](#license)
 
 <!-- /TOC -->
@@ -103,15 +102,6 @@ The reference documentation is upstream oil.nvim's and applies unchanged, except
 - [doc/recipes.md](doc/recipes.md) — recipes
 - [CHANGELOG.md](CHANGELOG.md) — release notes
 - [Upstream README](https://github.com/stevearc/oil.nvim#readme) — original documentation, FAQ, and alternatives
-
-## Third-party extensions
-
-These are plugins maintained by other authors that extend the functionality of oil.nvim.
-
-- [oil-git-status.nvim](https://github.com/refractalize/oil-git-status.nvim) - Shows git status of files in statuscolumn
-- [oil-git.nvim](https://github.com/benomahony/oil-git.nvim) - Shows git status of files with colour and symbols
-- [oil-git.nvim](https://github.com/malewicz1337/oil-git.nvim) - Async git status integration with directory support
-- [oil-lsp-diagnostics.nvim](https://github.com/JezerM/oil-lsp-diagnostics.nvim) - Shows LSP diagnostics indicator as virtual text
 
 ## License
 
