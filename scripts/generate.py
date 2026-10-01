@@ -1,6 +1,5 @@
 import os
 import os.path
-import re
 from dataclasses import dataclass, field
 from typing import Any, Dict, List
 
@@ -29,13 +28,6 @@ DOC = os.path.join(ROOT, "doc")
 VIMDOC = os.path.join(DOC, "oil.txt")
 
 
-def add_md_link_path(path: str, lines: List[str]) -> List[str]:
-    ret = []
-    for line in lines:
-        ret.append(re.sub(r"(\(#)", "(" + path + "#", line))
-    return ret
-
-
 def update_md_api():
     api_doc = os.path.join(DOC, "api.md")
     types = parse_directory(os.path.join(ROOT, "lua"))
@@ -54,28 +46,6 @@ def update_md_api():
         r"^<!-- /TOC -->$",
         toc,
     )
-    toc = add_md_link_path("doc/api.md", toc)
-    replace_section(
-        README,
-        r"^<!-- API -->$",
-        r"^<!-- /API -->$",
-        toc,
-    )
-
-
-def update_readme():
-    def get_toc(filename: str) -> List[str]:
-        subtoc = generate_md_toc(os.path.join(DOC, filename))
-        return add_md_link_path("doc/" + filename, subtoc)
-
-    recipes_toc = get_toc("recipes.md")
-
-    replace_section(
-        README,
-        r"^## Recipes$",
-        r"^#",
-        ["\n"] + recipes_toc + ["\n"],
-    )
 
 
 def update_md_toc(filename: str, max_level: int = 99):
@@ -85,18 +55,6 @@ def update_md_toc(filename: str, max_level: int = 99):
         r"^<!-- TOC -->$",
         r"^<!-- /TOC -->$",
         toc,
-    )
-
-
-def update_config_options():
-    config_file = os.path.join(ROOT, "lua", "oil", "config.lua")
-    opt_lines = ['\n```lua\nrequire("oil").setup({\n']
-    opt_lines.extend(read_section(config_file, r"^\s*local default_config =", r"^}$"))
-    replace_section(
-        README,
-        r"^## Options$",
-        r"^}\)$",
-        opt_lines,
     )
 
 
@@ -574,10 +532,8 @@ def generate_vimdoc():
 
 
 def main() -> None:
-    """Update the README"""
-    update_config_options()
+    """Update the generated documentation"""
     update_md_api()
     update_md_toc(README, max_level=1)
     update_md_toc(os.path.join(DOC, "recipes.md"))
-    update_readme()
     generate_vimdoc()
