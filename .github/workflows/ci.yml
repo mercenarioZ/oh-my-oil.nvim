@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y luarocks python3-venv
+          sudo luarocks install luacheck
+
+      - name: Install Neovim
+        run: |
+          curl -sL https://github.com/neovim/neovim/releases/download/stable/nvim-linux-x86_64.appimage -o nvim.appimage
+          chmod +x nvim.appimage
+          ./nvim.appimage --appimage-extract >/dev/null
+          sudo mv squashfs-root /opt/nvim
+          sudo ln -sf /opt/nvim/AppRun /usr/bin/nvim
+          nvim --version | head -1
+
+      - name: Check formatting
+        uses: JohnnyMorganz/stylua-action@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          version: v2.4.1
+          args: --check lua tests
+
+      - name: Lint
+        run: luacheck lua tests
+
+      - name: Test
+        run: ./run_tests.sh
+
+      - name: Check the docs are up to date
+        run: |
+          make doc
+          git diff --exit-code -- README.md doc
+
+  release:
+    name: Release
+    if: github.ref == 'refs/heads/master'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: googleapis/release-please-action@v5
+        id: release
+        with:
+          release-type: simple
+      - uses: actions/checkout@v6
+      - name: Update stable tag
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git tag -f stable
+          git push -f origin stable
