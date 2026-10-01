@@ -3,7 +3,7 @@ set -e
 version="${NVIM_TAG-stable}"
 dl_name="nvim-linux-x86_64.appimage"
 # The appimage name changed in v0.10.4
-if python -c 'from packaging.version import Version; import sys; sys.exit(not (Version(sys.argv[1]) < Version("v0.10.4")))' "$version" 2>/dev/null; then
+if python3 -c 'from packaging.version import Version; import sys; sys.exit(not (Version(sys.argv[1]) < Version("v0.10.4")))' "$version" 2>/dev/null; then
   dl_name="nvim.appimage"
 fi
 curl -sL "https://github.com/neovim/neovim/releases/download/${version}/${dl_name}" -o nvim.appimage
