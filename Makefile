@@ -14,7 +14,7 @@ venv:
 
 ## doc: generate documentation
 .PHONY: doc
-doc: scripts/nvim_doc_tools venv
+doc: venv
 	venv/bin/python scripts/main.py generate
 	venv/bin/python scripts/main.py lint
 
@@ -30,7 +30,7 @@ lint: scripts/nvim-typecheck-action fastlint
 
 ## fastlint: run only fast linters
 .PHONY: fastlint
-fastlint: scripts/nvim_doc_tools venv
+fastlint: venv
 	venv/bin/python scripts/main.py lint
 	luacheck lua tests --formatter plain
 	stylua --check lua tests
@@ -51,9 +51,6 @@ benchmark: scripts/benchmark.nvim
 	nvim --clean -u perf/bootstrap.lua -c 'lua benchmark()'
 	@cat perf/tmp/benchmark.txt
 
-scripts/nvim_doc_tools:
-	git clone https://github.com/stevearc/nvim_doc_tools scripts/nvim_doc_tools
-
 scripts/nvim-typecheck-action:
 	git clone https://github.com/stevearc/nvim-typecheck-action scripts/nvim-typecheck-action
 
@@ -63,4 +60,4 @@ scripts/benchmark.nvim:
 ## clean: reset the repository to a clean state
 .PHONY: clean
 clean:
-	rm -rf scripts/nvim_doc_tools scripts/nvim-typecheck-action venv .testenv perf/tmp profile.json
+	rm -rf scripts/nvim-typecheck-action venv .testenv perf/tmp profile.json
