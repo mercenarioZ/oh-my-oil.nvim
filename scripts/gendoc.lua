@@ -1,5 +1,5 @@
--- Generate doc/oil.txt
--- Run: nvim -l scripts/gendoc.lua > doc/oil.txt
+-- Generate doc/oil.txt, doc/api.md and the markdown tables of contents
+-- Run from the repo root: nvim --clean -l scripts/gendoc.lua [lint]
 vim.opt.rtp:prepend(".")
 
 local WIDTH = 80
@@ -1116,9 +1116,11 @@ local function highlights_body()
   return trim_blank(lines)
 end
 
+local TYPES = parse_directory("lua")
+local API_FUNCS = TYPES.files["oil/init.lua"].functions
+
 local function api_body()
-  local types = parse_directory("lua")
-  return render_api("oil", types.files["oil/init.lua"].functions, types)
+  return render_api("oil", API_FUNCS, TYPES)
 end
 
 local sections = {
@@ -1138,4 +1140,206 @@ local prefix = {
   "*OhMyOil* *oh-my-oil* *oh-my-oil.nvim* *Oil* *oil* *oil.nvim*",
 }
 
-io.stdout:write(table.concat(render_doc(prefix, "oh-my-oil", sections), "\n"), "\n")
+-- Markdown
+
+local function write_lines(path, lines)
+  local file = assert(io.open(path, "w"))
+  file:write(table.concat(lines, "\n"), "\n")
+  file:close()
+end
+
+-- Replace the lines between the first start_pat line and the next end_pat line
+local function replace_section(path, start_pat, end_pat, new_lines)
+  local before, after, state = {}, {}, "before"
+  for _, line in ipairs(read_lines(path)) do
+    if state == "before" then
+      table.insert(before, line)
+      if line:match(start_pat) then
+        state = "inside"
+      end
+    elseif state == "inside" and line:match(end_pat) then
+      state = "after"
+    end
+    if state == "after" then
+      table.insert(after, line)
+    end
+  end
+  if state ~= "after" then
+    error("could not find section " .. start_pat .. " in " .. path)
+  end
+  write_lines(path, vim.list_extend(vim.list_extend(before, new_lines), after))
+end
+
+local function md_anchor(title)
+  return (title:lower():gsub("%s", "-"):gsub("[^%w_%-]", ""))
+end
+
+-- "## Title" is level 0, "### Title" level 1, ...
+local function md_toc(path, max_level)
+  local lines = { "" }
+  for _, line in ipairs(read_lines(path)) do
+    local hashes, title = line:match("^#(#+) (.+)$")
+    if hashes and #hashes - 1 < max_level then
+      local link = "[" .. title .. "](#" .. md_anchor(title) .. ")"
+      table.insert(lines, string.rep("  ", #hashes - 1) .. "- " .. link)
+    end
+  end
+  table.insert(lines, "")
+  return lines
+end
+
+local function update_md_toc(path, max_level)
+  replace_section(path, "^<!%-%- TOC %-%->$", "^<!%-%- /TOC %-%->$", md_toc(path, max_level or math.huge))
+end
+
+-- |target| -> target
+local function strip_vimdoc_links(s)
+  return (s:gsub("()|([^|]+)|()", function(start, target, stop)
+    if not s:sub(start - 1, start - 1):match("[%w_]") and not s:sub(stop, stop):match("[%w_]") then
+      return target
+    end
+  end))
+end
+
+local function md_table(rows, cols)
+  local widths = {}
+  for _, col in ipairs(cols) do
+    widths[col] = math.max(3, #col)
+    for _, row in ipairs(rows) do
+      widths[col] = math.max(widths[col], #(row[col] or ""))
+    end
+  end
+  local function format_row(cells)
+    local padded = {}
+    for _, col in ipairs(cols) do
+      local cell = cells[col] or ""
+      table.insert(padded, cell .. string.rep(" ", widths[col] - #cell))
+    end
+    return "| " .. table.concat(padded, " | ") .. " |"
+  end
+  local header, sep = {}, {}
+  for _, col in ipairs(cols) do
+    header[col] = col
+    sep[col] = string.rep("-", widths[col])
+  end
+  local lines = { format_row(header), format_row(sep) }
+  for _, row in ipairs(rows) do
+    table.insert(lines, format_row(row))
+  end
+  return lines
+end
+
+local function params_to_rows(params, types, prefix)
+  prefix = prefix or ""
+  local rows = {}
+  for _, param in ipairs(params) do
+    table.insert(rows, {
+      Param = prefix .. param.name,
+      Type = "`" .. param.type:gsub("|", "\\|") .. "`",
+      Desc = strip_vimdoc_links(param.desc),
+    })
+    vim.list_extend(rows, params_to_rows(subparams(param, types), types, prefix .. ">"))
+    local alias = types.aliases[strip_nil(param.type)]
+    for _, val in ipairs(alias and alias.values or {}) do
+      table.insert(rows, { Type = "`" .. val.value .. "`", Desc = strip_vimdoc_links(val.desc) })
+    end
+  end
+  return rows
+end
+
+local function render_md_api(funcs, types)
+  local lines = { "" }
+  for _, func in ipairs(funcs) do
+    if not func.private and not func.deprecated then
+      local args = vim.tbl_map(function(p)
+        return p.name
+      end, func.params)
+      local signature = func.name .. "(" .. table.concat(args, ", ") .. ")"
+      vim.list_extend(lines, { "## " .. signature, "" })
+      if #func.returns > 0 then
+        local rtypes = vim.tbl_map(function(r)
+          return r.type
+        end, func.returns)
+        signature = signature .. ": " .. table.concat(rtypes, ", ")
+      end
+      if func.summary ~= "" then
+        vim.list_extend(lines, { "`" .. signature .. "` \\", func.summary, "" })
+      else
+        vim.list_extend(lines, { "`" .. signature .. "`", "" })
+      end
+      if #func.params > 0 then
+        vim.list_extend(lines, md_table(params_to_rows(func.params, types), { "Param", "Type", "Desc" }))
+      end
+      if vim.iter(func.returns):any(function(r)
+        return r.desc ~= ""
+      end) then
+        vim.list_extend(lines, { "", "Returns:", "" })
+        local rows = vim.tbl_map(function(r)
+          return { Type = r.type, Desc = r.desc }
+        end, func.returns)
+        vim.list_extend(lines, md_table(rows, { "Type", "Desc" }))
+      end
+      if func.note ~= "" then
+        vim.list_extend(lines, { "", "**Note:**", "<pre>", func.note, "</pre>" })
+      end
+      if func.example ~= "" then
+        vim.list_extend(lines, { "", "**Examples:**", "```lua", func.example, "```" })
+      end
+      table.insert(lines, "")
+    end
+  end
+  table.insert(lines, "")
+  return lines
+end
+
+-- Every relative link in the markdown files must point to an existing file and heading
+
+local function has_anchor(path, anchor)
+  for _, line in ipairs(read_lines(path)) do
+    local _, title = line:match("^#(#+) (.+)$")
+    title = title and (title:match("^%[([^%]]+)%]%([^%)]+%)") or title)
+    if title and md_anchor(title) == anchor then
+      return true
+    end
+  end
+  return false
+end
+
+local function lint_md_links(paths)
+  local errors = {}
+  for _, path in ipairs(paths) do
+    local in_code = false
+    for _, line in ipairs(read_lines(path)) do
+      if line:match("^```") then
+        in_code = not in_code
+      elseif not in_code then
+        for link in line:gmatch("%[[^%]]+%]%(([^%)]+)%)") do
+          if not link:match("^<?http") then
+            local target, anchor = unpack(vim.split(link, "#", { plain = true }))
+            target = target == "" and path or vim.fs.joinpath(vim.fs.dirname(path), target)
+            if not vim.uv.fs_stat(target) then
+              table.insert(errors, path .. " invalid link: " .. link)
+            elseif anchor and not has_anchor(target, anchor) then
+              table.insert(errors, path .. " invalid link anchor: " .. link)
+            end
+          end
+        end
+      end
+    end
+  end
+  return errors
+end
+
+if arg[1] == "lint" then
+  local errors = lint_md_links(vim.list_extend({ "README.md" }, vim.fn.glob("doc/*.md", false, true)))
+  for _, err in ipairs(errors) do
+    io.stdout:write(err, "\n")
+  end
+  os.exit(#errors > 0 and 1 or 0)
+end
+
+replace_section("doc/api.md", "^<!%-%- API %-%->$", "^<!%-%- /API %-%->$", render_md_api(API_FUNCS, TYPES))
+update_md_toc("doc/api.md", 1)
+update_md_toc("README.md", 1)
+update_md_toc("doc/recipes.md")
+write_lines("doc/oil.txt", render_doc(prefix, "oh-my-oil", sections))
