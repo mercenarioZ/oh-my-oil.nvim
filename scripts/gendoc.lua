@@ -56,6 +56,31 @@ local function render_doc(prefix, project, sections)
   return lines
 end
 
+local TRASH = [[
+
+Oil has built-in support for using the system trash. When
+`delete_to_trash = true`, any deleted files will be sent to the trash instead
+of being permanently deleted. You can browse the trash for a directory using
+the `toggle_trash` action (bound to `g\` by default). You can view all files
+in the trash with `:OhMyOil --trash /`.
+
+To restore files, simply move them from the trash to the desired destination,
+the same as any other file operation. If you delete files from the trash they
+will be permanently deleted (purged).
+
+Linux:
+    Oil supports the FreeDesktop trash specification.
+    https://specifications.freedesktop.org/trash/1.0/
+    All features should work.
+
+Mac:
+    Oil has limited support for MacOS due to the proprietary nature of the
+    implementation. The trash bin can only be viewed as a single dir
+    (instead of being able to see files that were trashed from a directory).
+
+Windows:
+    Oil supports the Windows Recycle Bin. All features should work.]]
+
 local sections = {
   { name = "config", tag = "oil-config", body = {} },
   { name = "options", tag = "oil-options", body = {} },
@@ -65,7 +90,7 @@ local sections = {
   { name = "Version control column", tag = "oil-vcs", body = {} },
   { name = "Actions", tag = "oil-actions", body = {} },
   { name = "Highlights", tag = "oil-highlights", body = {} },
-  { name = "Trash", tag = "oil-trash", body = {} },
+  { name = "Trash", tag = "oil-trash", body = vim.split(TRASH, "\n") },
 }
 
 local prefix = {
