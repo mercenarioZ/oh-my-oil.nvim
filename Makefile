@@ -8,15 +8,11 @@ help:
 .PHONY: all
 all: doc lint test
 
-venv:
-	python3 -m venv venv
-	venv/bin/pip install -r scripts/requirements.txt
-
 ## doc: generate documentation
 .PHONY: doc
-doc: venv
-	venv/bin/python scripts/main.py generate
-	venv/bin/python scripts/main.py lint
+doc:
+	nvim --clean -l scripts/gendoc.lua
+	nvim --clean -l scripts/gendoc.lua lint
 
 ## test: run tests
 .PHONY: test
@@ -30,8 +26,8 @@ lint: scripts/nvim-typecheck-action fastlint
 
 ## fastlint: run only fast linters
 .PHONY: fastlint
-fastlint: venv
-	venv/bin/python scripts/main.py lint
+fastlint:
+	nvim --clean -l scripts/gendoc.lua lint
 	luacheck lua tests --formatter plain
 	stylua --check lua tests
 
@@ -60,4 +56,4 @@ scripts/benchmark.nvim:
 ## clean: reset the repository to a clean state
 .PHONY: clean
 clean:
-	rm -rf scripts/nvim-typecheck-action venv .testenv perf/tmp profile.json
+	rm -rf scripts/nvim-typecheck-action .testenv perf/tmp profile.json

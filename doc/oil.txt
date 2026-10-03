@@ -1,14 +1,14 @@
 *oil.txt*
 *OhMyOil* *oh-my-oil* *oh-my-oil.nvim* *Oil* *oil* *oil.nvim*
 --------------------------------------------------------------------------------
-CONTENTS                                                            *oil-contents*
+CONTENTS                                                      *oh-my-oil-contents*
 
   1. Config                                                       |oil-config|
   2. Options                                                     |oil-options|
   3. Commands                                                   |oil-commands|
   4. Api                                                             |oil-api|
   5. Columns                                                     |oil-columns|
-  6. Vcs column                                                      |oil-vcs|
+  6. Version control column                                          |oil-vcs|
   7. Actions                                                     |oil-actions|
   8. Highlights                                               |oil-highlights|
   9. Trash                                                         |oil-trash|
@@ -556,7 +556,7 @@ vcs                                                                   *column-vc
       {align} `"left"|"center"|"right"` Text alignment within the column
 
 --------------------------------------------------------------------------------
-VCS COLUMN                                                               *oil-vcs*
+VERSION CONTROL COLUMN                                                   *oil-vcs*
 
 Oil can show the version control status of each entry in the listing.
 The status comes from the version control system that owns the directory: jj
