@@ -9,7 +9,20 @@ continue oil.nvim's version numbers. The history of everything this fork
 inherits from oil.nvim up to v2.16.0 lives in the
 [upstream changelog](https://github.com/stevearc/oil.nvim/blob/master/CHANGELOG.md).
 
-## [0.1.0] - 2026-10-01
+## [0.2.0] - 2026-10-04
+
+### Added
+
+- `vcs.highlight_filename`: tint the filename itself with the same group as
+  the version control column. Clean entries keep `OilFile`/`OilDir`. Needs the
+  `vcs` column; a user `view_options.highlight_filename` wins
+  (`:help oil-vcs-highlights`)
+
+### Fixed
+
+- keep minor bumps before 1.0: `bump-minor-pre-major` belongs in
+  `packages["."]`, not at the config root
+
 
 ### Added
 
