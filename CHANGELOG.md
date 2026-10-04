@@ -9,6 +9,13 @@ continue oil.nvim's version numbers. The history of everything this fork
 inherits from oil.nvim up to v2.16.0 lives in the
 [upstream changelog](https://github.com/stevearc/oil.nvim/blob/master/CHANGELOG.md).
 
+## [0.2.1](https://github.com/mercenarioZ/oh-my-oil.nvim/compare/v0.2.0...v0.2.1) (2026-10-04)
+
+
+### Bug Fixes
+
+* redraw after directory navigation ([230559d](https://github.com/mercenarioZ/oh-my-oil.nvim/commit/230559d8e3cf935d4528f4d50af8f0ae2fd0a893))
+
 ## [Unreleased]
 
 ### Fixed
