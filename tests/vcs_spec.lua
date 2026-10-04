@@ -271,6 +271,66 @@ a.describe("vcs column", function()
     assert.is_truthy(after.fg, "colors were lost after a colorscheme switch")
   end)
 
+  a.it("tints filenames when highlight_filename is set", function()
+    local repo = tmpdir.path .. "/git"
+    init_git_repo(repo)
+    setup({ highlight_filename = true })
+    open(repo)
+    expect_column({ ["dirty.txt"] = "M" })
+    local settled = vim.wait(10000, function()
+      return vcs.highlight_filename({ name = "dirty.txt" }, false, false, false, oil_buf)
+        == "OilVcsModified"
+    end, 50)
+    assert.is_true(settled, "the filename highlight never settled")
+    assert.equals(
+      "OilVcsModified",
+      vcs.highlight_filename({ name = "dirty.txt" }, false, false, false, oil_buf)
+    )
+    assert.is_nil(
+      vcs.highlight_filename({ name = "keep.txt" }, false, false, false, oil_buf),
+      "clean entries keep OilFile/OilDir"
+    )
+    assert.is_nil(
+      vcs.highlight_filename({ name = ".." }, false, false, false, oil_buf),
+      "parent entry is never tinted"
+    )
+  end)
+
+  a.it("lets a user highlight_filename win over the vcs tint", function()
+    local repo = tmpdir.path .. "/git"
+    init_git_repo(repo)
+    oil.setup({
+      columns = { "vcs" },
+      view_options = {
+        show_hidden = true,
+        highlight_filename = function()
+          return "CustomGroup"
+        end,
+      },
+      vcs = { highlight_filename = true },
+    })
+    open(repo)
+    expect_column({ ["dirty.txt"] = "M" })
+    assert.equals("CustomGroup", require("oil.config").view_options.highlight_filename())
+    assert.equals(
+      "OilVcsModified",
+      vcs.highlight_filename({ name = "dirty.txt" }, false, false, false, oil_buf)
+    )
+  end)
+
+  a.it("does not tint filenames without the vcs column", function()
+    local repo = tmpdir.path .. "/git"
+    init_git_repo(repo)
+    oil.setup({
+      columns = { "icon" },
+      view_options = { show_hidden = true },
+      vcs = { highlight_filename = true },
+    })
+    open(repo)
+    vim.wait(500)
+    assert.is_nil(require("oil.config").view_options.highlight_filename)
+  end)
+
   it_with_jj("uses the jj backend in a repository without git", function()
     local repo = tmpdir.path .. "/jj-plain"
     init_jj_repo(repo, false)

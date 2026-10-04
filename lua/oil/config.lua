@@ -123,6 +123,9 @@ local default_config = {
       ["?"] = { group = "OilVcsUntracked", base = "DiagnosticHint" },
       ["!"] = { group = "OilVcsIgnored", base = "Comment", plain = true },
     },
+    -- Tint the filename itself with the same group as the column.
+    -- Needs the "vcs" column; a user view_options.highlight_filename wins.
+    highlight_filename = false,
     -- Notify once when the version control command fails
     notify_on_error = true,
     -- Milliseconds before a directory whose command failed is fetched again
@@ -353,15 +356,16 @@ local M = {}
 ---@field backends? string[] Version control backends to try, in order (:help oil-vcs-backends)
 ---@field symbols? table<string, string> Mapping of status code to the text drawn in the column
 ---@field highlight? table<string, oil.VcsHighlight> Mapping of status code to the highlight definition
+---@field highlight_filename? boolean Tint the filename with the same group as the column
 ---@field notify_on_error? boolean Notify once when the version control command fails
 ---@field retry_ms? integer Milliseconds before a directory whose command failed is fetched again
 ---@field refresh_on_write? boolean Refetch after writing a file that is inside a listed directory
 ---@field refresh_on_mutation? boolean Refetch after oil applies file operations
-
 ---@class (exact) oil.VcsOptions
 ---@field backends string[]
 ---@field symbols table<string, string>
 ---@field highlight table<string, oil.VcsHighlight>
+---@field highlight_filename boolean
 ---@field notify_on_error boolean
 ---@field retry_ms integer
 ---@field refresh_on_write boolean

@@ -192,6 +192,20 @@ end
 M.setup = function(opts)
   M.config = opts
 
+  if opts.highlight_filename then
+    local config = require("oil.config")
+    local has_column = false
+    for _, def in ipairs(config.columns) do
+      if require("oil.util").split_config(def) == "vcs" then
+        has_column = true
+        break
+      end
+    end
+    if has_column and not config.view_options.highlight_filename then
+      config.view_options.highlight_filename = M.highlight_filename
+    end
+  end
+
   enabled = {}
   for _, name in ipairs(opts.backends) do
     local backend = backends[name]
@@ -231,6 +245,32 @@ M.setup = function(opts)
       end,
     })
   end
+end
+
+---Tint the filename with the same group the column uses. Shares the column's
+---fetch: the first render kicks off a fetch and keeps OilDir/OilFile until
+---the redraw after it lands.
+---@param entry oil.Entry
+---@param _ boolean
+---@param _ boolean
+---@param _ boolean
+---@param bufnr integer
+---@return nil|string
+M.highlight_filename = function(entry, _, _, _, bufnr)
+  if not M.config or entry.name == ".." then
+    return nil
+  end
+  local dir = require("oil").get_current_dir(bufnr)
+  if not dir then
+    return nil
+  end
+  local status = cache[dir]
+  if not status then
+    M.load(dir)
+    return nil
+  end
+  local spec = status[entry.name] and M.config.highlight[status[entry.name]]
+  return spec and spec.group
 end
 
 ---The column as registered with |oil.columns|. A column render has to be

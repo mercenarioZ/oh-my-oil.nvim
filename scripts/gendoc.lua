@@ -998,6 +998,15 @@ Override or add codes with the `highlight` option of the `vcs` table:
       },
     })
 <
+Set `vcs.highlight_filename` to tint the filename itself with the same group
+as the column (clean entries keep `OilFile`/`OilDir`). It needs the `vcs`
+column, and a user `view_options.highlight_filename` wins:
+>lua
+    require("oil").setup({
+      columns = { "icon", "vcs", "mtime" },
+      vcs = { highlight_filename = true },
+    })
+<
 Colors are re-derived whenever the colorscheme changes.]]
 local VCS_API = [[
 

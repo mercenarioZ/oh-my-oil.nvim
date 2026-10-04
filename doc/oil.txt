@@ -142,6 +142,9 @@ CONFIG                                                                *oil-confi
           ["?"] = { group = "OilVcsUntracked", base = "DiagnosticHint" },
           ["!"] = { group = "OilVcsIgnored", base = "Comment", plain = true },
         },
+        -- Tint the filename itself with the same group as the column.
+        -- Needs the "vcs" column; a user view_options.highlight_filename wins.
+        highlight_filename = false,
         -- Notify once when the version control command fails
         notify_on_error = true,
         -- Milliseconds before a directory whose command failed is fetched again
@@ -653,6 +656,15 @@ Override or add codes with the `highlight` option of the `vcs` table:
           M = { group = "OilVcsModified", base = "DiffChange", plain = true },
         },
       },
+    })
+<
+Set `vcs.highlight_filename` to tint the filename itself with the same group
+as the column (clean entries keep `OilFile`/`OilDir`). It needs the `vcs`
+column, and a user `view_options.highlight_filename` wins:
+>lua
+    require("oil").setup({
+      columns = { "icon", "vcs", "mtime" },
+      vcs = { highlight_filename = true },
     })
 <
 Colors are re-derived whenever the colorscheme changes.
