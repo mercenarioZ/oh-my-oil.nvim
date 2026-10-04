@@ -9,6 +9,13 @@ continue oil.nvim's version numbers. The history of everything this fork
 inherits from oil.nvim up to v2.16.0 lives in the
 [upstream changelog](https://github.com/stevearc/oil.nvim/blob/master/CHANGELOG.md).
 
+## [Unreleased]
+
+### Fixed
+
+- Schedule navigation preview updates after cursor restoration and explicitly
+  redraw when navigation and preview opening complete.
+
 ## [0.2.0] - 2026-10-04
 
 ### Added

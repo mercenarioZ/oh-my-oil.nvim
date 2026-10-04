@@ -353,18 +353,36 @@ end
 
 ---@param oil_bufnr? integer
 local function update_preview_window(oil_bufnr)
-  oil_bufnr = oil_bufnr or 0
+  oil_bufnr = oil_bufnr or vim.api.nvim_get_current_buf()
+  local winid = vim.api.nvim_get_current_win()
   local util = require("oil.util")
+  local preview_win_id = util.get_preview_win()
   util.run_after_load(oil_bufnr, function()
-    local cursor_entry = M.get_cursor_entry()
-    local preview_win_id = util.get_preview_win()
-    if
-      cursor_entry
-      and preview_win_id
-      and cursor_entry.id ~= vim.w[preview_win_id].oil_entry_id
-    then
-      M.open_preview()
-    end
+    -- Rendering schedules cursor restoration. Update the preview only after
+    -- that restoration, in the window that initiated navigation.
+    vim.schedule(function()
+      if
+        not vim.api.nvim_win_is_valid(winid)
+        or vim.api.nvim_get_current_win() ~= winid
+        or vim.api.nvim_win_get_buf(winid) ~= oil_bufnr
+      then
+        return
+      end
+      local cursor_entry = M.get_cursor_entry()
+      -- Only update the preview that existed when navigation began.
+      if
+        cursor_entry
+        and preview_win_id
+        and vim.api.nvim_win_is_valid(preview_win_id)
+        and cursor_entry.id ~= vim.w[preview_win_id].oil_entry_id
+      then
+        M.open_preview(nil, function()
+          vim.cmd.redraw()
+        end)
+      end
+      -- Async navigation must become visible without another input event.
+      vim.cmd.redraw()
+    end)
   end)
 end
 
