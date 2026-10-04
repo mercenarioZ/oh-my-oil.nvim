@@ -9,6 +9,18 @@ continue oil.nvim's version numbers. The history of everything this fork
 inherits from oil.nvim up to v2.16.0 lives in the
 [upstream changelog](https://github.com/stevearc/oil.nvim/blob/master/CHANGELOG.md).
 
+## 1.0.0 (2026-10-04)
+
+
+### Features
+
+* **vcs:** tint filename with status highlight ([6a5e4ec](https://github.com/mercenarioZ/oh-my-oil.nvim/commit/6a5e4ec57fed12a4054d07c3303727bf21b1d45d))
+
+
+### Bug Fixes
+
+* keep minor bumps before 1.0 ([87ad2c8](https://github.com/mercenarioZ/oh-my-oil.nvim/commit/87ad2c857ed98f82377ee58a4eb2cf46822187e8))
+
 ## [0.1.0] - 2026-10-01
 
 ### Added
