@@ -1,6 +1,6 @@
 # oh-my-oil
 
-A fork of [oil.nvim](https://github.com/stevearc/oil.nvim) by [stevearc](https://github.com/stevearc), maintained by [mercenarioZ](https://github.com/mercenarioZ). It merges [voil.nvim](https://github.com/mercenarioZ/voil.nvim) into oil.nvim, and its version line starts over at 0.1.0 instead of following upstream.
+A fork of [oil.nvim](https://github.com/stevearc/oil.nvim) by [stevearc](https://github.com/stevearc), maintained by [mercenarioZ](https://github.com/mercenarioZ).
 
 Like oil.nvim, it is a [vim-vinegar](https://github.com/tpope/vim-vinegar) like file explorer that lets you edit your filesystem like a normal Neovim buffer. On top of that, voil's version control status column is built in, so the state of every entry comes straight from jj or git.
 
